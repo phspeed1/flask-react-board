@@ -63,4 +63,4 @@ def create_post():
     return jsonify({'message': '게시글이 추가되었습니다.'}), 201
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000)
+    app.run(host='0.0.0.0', port=5000, ssl_context=("/app/certs/cert.pem", "/app/certs/key.pem"))
