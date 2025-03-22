@@ -1,0 +1,15 @@
+# Node.js 관련 파일
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python 관련 파일
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+
+# Docker 관련 파일
+*.log
+docker-compose.override.yml

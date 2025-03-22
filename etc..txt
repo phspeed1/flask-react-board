@@ -1,0 +1,164 @@
+가상환경 목록
+conda env list
+
+가상환경 생성
+conda create -n <가상환경명>
+conda create -n <가상환경명> python=<버전> 
+
+활성화 및 비활성화
+conda activate <가상환경명>
+conda deactivate
+
+가상환경 삭제
+conda env remove -n <가상환경명>
+
+현재 가상환경에 패키지 목록 확인
+conda list
+
+현재 가상환경에 패키지 설치하기 
+conda install <패키지명>
+
+현재 가상환경에 패키지 제거하기
+conda uninstall <패키지명>
+
+
+C:\Users\phspe>conda activate
+
+--------------------------------------------------------------
+
+mkdir flask-react-board && cd flask-react-board
+mkdir backend frontend db
+
+
+npx create-react-app frontend
+cd frontend
+npm install axios
+
+npm start
+
+docker-compose up -d
+
+
+
+
+cd backend
+python -m venv venv
+venv\Scripts\activate  # (Windows)
+pip install flask flask-cors cx_Oracle
+
+--------------------------------------------------------------
+D:\flask-react-board\frontend>npm start
+http://localhost:3000
+
+
+D:\flask-react-board\backend>conda activate flask_env
+(flask_env) D:\flask-react-board\backend>python app.py
+http://localhost:5000/posts
+
+D:\flask-react-board>
+docker-compose up --build -d
+docker-compose down && docker-compose build && docker-compose up -d
+
+docker-compose down
+docker-compose build
+docker-compose up -d
+
+
+---------------------------------
+추가 SQL Plus 설치
+---------------------------------
+docker exec -it flask-react-board-backend-1 /bin/bash
+
+cd /usr/lib/oracle
+
+# SQL*Plus 패키지 다운로드 (12.2.0.1.0 버전)
+로컬에 다운로드 https://download.oracle.com/otn_software/linux/instantclient/instantclient-sqlplus-linux.x64-12.2.0.1.0.zip
+
+docker cp D:\flask-react-board\backend\instantclient-sqlplus-linux.x64-12.2.0.1.0.zip flask-react-board-backend-1:/usr/lib/oracle/
+docker exec -it flask-react-board-backend-1 /bin/bash
+unzip instantclient-sqlplus-linux.x64-12.2.0.1.0.zip
+
+echo 'export LD_LIBRARY_PATH=/usr/lib/oracle/instantclient_12_2:$LD_LIBRARY_PATH' >> ~/.bashrc
+echo 'export PATH=/usr/lib/oracle/instantclient_12_2:$PATH' >> ~/.bashrc
+echo 'export SQLPATH=/usr/lib/oracle/instantclient_12_2' >> ~/.bashrc
+source ~/.bashrc
+
+export NLS_LANG=AMERICAN_AMERICA.AL32UTF8
+
+sqlplus phspeed1/1234@//host.docker.internal:1521/xe
+SELECT * FROM posts;
+EXIT;
+
+CREATE TABLE POSTS(ID NUMBER, TITLE VARCHAR2(999), CONTENT VARCHAR2(999));
+
+아래와 같이 NLS_LANG 을 추가했고, SQL 플러스까지 잘 됩니다. 저는 backend 폴더에 있는 instantclient-basiclite-linux.x64-12.2.0.1.0.zip 뿐만아니라 instantclient-sqlplus-linux.x64-12.2.0.1.0.zip 도 포함해서 docker 로 배포하고 싶습니다.
+root@be70409fa978:/usr/lib/oracle# export
+declare -x GPG_KEY="E3FF2839C048B25C084DEBE9B26995E310250568"
+declare -x HOME="/root"
+declare -x HOSTNAME="be70409fa978"
+declare -x LANG="C.UTF-8"
+declare -x LD_LIBRARY_PATH="/usr/lib/oracle/instantclient_12_2"
+declare -x NLS_LANG="AMERICAN_AMERICA.AL32UTF8"
+declare -x OLDPWD="/usr/lib/oracle/instantclient_12_2"
+declare -x ORACLE_HOME="/usr/lib/oracle/instantclient_12_2"
+declare -x ORACLE_HOST="host.docker.internal"
+declare -x ORACLE_PASSWORD="1234"
+declare -x ORACLE_PORT="1521"
+declare -x ORACLE_SERVICE_NAME="xe"
+declare -x ORACLE_USER="phspeed1"
+declare -x PATH="/usr/lib/oracle/instantclient_12_2:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+declare -x PWD="/usr/lib/oracle"
+declare -x PYTHON_SHA256="3126f59592c9b0d798584755f2bf7b081fa1ca35ce7a6fea980108d752a05bb1"
+declare -x PYTHON_VERSION="3.9.21"
+declare -x SHLVL="1"
+declare -x SQLPATH="/usr/lib/oracle/instantclient_12_2"
+declare -x TERM="xterm"
+declare -x path="/usr/lib/oracle/instantclient_12_2:/usr/local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin/"
+
+
+# docker compose 명령어
+-f : docker-compose.yml 경로 줄 때
+docker compose -f ./docker-compose.prod.yml up
+
+빌드
+docker compose build <service>
+
+빌드 업로드 시작까지
+docker compose up <service>
+docker compose up --build
+
+일괄 중단(stop) : Ctrl + C
+
+중단
+docker compose stop
+
+중단 과 제거
+docker compose down <service>	
+
+시작
+docker compose start <service>
+
+리스타트
+docker copmose restart <service>
+
+컨테이너 상태
+docker compose ps
+
+로그
+docker compose logs <service>
+
+또는
+docker logs <service>
+
+터미널 연결
+docker exec -it <container_id/name> /bin/bash
+
+또는 shell 에 따라서
+docker exec -it <container_id/name> /bin/sh
+
+설정 조회
+docker exec config <service>
+
+# 도커허브
+docker tag local-image:tagname new-repo:tagname
+docker push new-repo:tagname

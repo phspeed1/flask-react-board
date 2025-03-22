@@ -1,0 +1,302 @@
+docker-compose down
+docker-compose build
+docker-compose up -d
+
+
+docker compose stop frontend
+docker compose rm -f frontend
+docker compose build frontend
+docker compose up -d frontend
+
+docker compose stop frontend && \
+docker compose rm -f frontend && \
+docker compose build frontend && \
+docker compose up -d frontend
+
+cd D:\prj\flask-react-board
+git init
+
+git remote add origin https://github.com/phspeed1/flask-react-board.git
+
+--------------------------------------------
+D:\prj\flask-react-board.gitignore
+--------------------------------------------
+# Node.js 관련 파일
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python 관련 파일
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+venv/
+
+# Docker 관련 파일
+*.log
+docker-compose.override.yml
+--------------------------------------------
+
+--------------------------------------------
+D:\flask-react-board\docker-compose.yml
+--------------------------------------------
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb-container
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: "root"
+      MYSQL_DATABASE: "flask_board"
+      MYSQL_USER: "phspeed"
+      MYSQL_PASSWORD: "1234"
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -proot || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST: "mariadb-container" 
+      DB_PORT: "3306"
+      DB_USER: "phspeed"
+      DB_PASSWORD: "1234"
+      DB_NAME: "flask_board"
+    depends_on:
+      mariadb:
+        condition: service_healthy
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3100:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    command: ["npm", "start"]
+
+volumes:
+  mariadb_data:
+
+
+
+--------------------------------------------
+D:\flask-react-board\frontend\Dockerfile
+--------------------------------------------
+
+FROM node:18
+
+WORKDIR /app
+
+COPY package.json package-lock.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 3100
+
+CMD ["npm", "start"]
+
+
+--------------------------------------------
+D:\flask-react-board\frontend\package.json
+--------------------------------------------
+{
+  "name": "flask-react-board-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "react-scripts": "5.0.1",
+    "axios": "^1.8.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}
+
+--------------------------------------------
+D:\flask-react-board\frontend\src\App.js
+--------------------------------------------
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+
+function App() {
+  const [posts, setPosts] = useState([]);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
+  useEffect(() => {
+    axios.get("http://localhost:5000/posts").then((response) => {
+      setPosts(response.data);
+    });
+  }, []);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    axios.post("http://localhost:5000/posts", { title, content }).then(() => {
+      setTitle("");
+      setContent("");
+      window.location.reload();
+    });
+  };
+
+  return (
+    <div>
+      <h1>📌 게시판</h1>
+      <form onSubmit={handleSubmit}>
+        <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+        <textarea value={content} onChange={(e) => setContent(e.target.value)} required />
+        <button type="submit">게시글 등록</button>
+      </form>
+      <ul>
+        {posts.map((post) => (
+          <li key={post.id}>
+            <h3>{post.title}</h3>
+            <p>{post.content}</p>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export default App;
+
+--------------------------------------------
+D:\flask-react-board\frontend\src\index.js
+--------------------------------------------
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+
+--------------------------------------------
+D:\flask-react-board\backend\Dockerfile
+--------------------------------------------
+FROM python:3.9
+
+WORKDIR /app
+
+# 필수 패키지 설치
+RUN apt-get update && apt-get install -y libaio1 unzip wget libmariadb-dev
+
+
+
+# Python 패키지 설치
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 코드 복사
+COPY . .
+
+# Flask 실행
+CMD ["python", "app.py"]
+
+
+--------------------------------------------
+D:\flask-react-board\backend\requirements.txt
+--------------------------------------------
+flask
+flask-cors
+pymysql
+
+--------------------------------------------
+D:\flask-react-board\backend\app.py
+--------------------------------------------
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+import pymysql
+import os
+
+app = Flask(__name__)
+CORS(app)
+
+# 환경 변수에서 DB 정보 가져오기
+DB_HOST = os.getenv("DB_HOST", "mariadb-container")
+DB_PORT = int(os.getenv("DB_PORT", "3306"))
+DB_USER = os.getenv("DB_USER", "phspeed")
+DB_PASSWORD = os.getenv("DB_PASSWORD", "1234")
+DB_NAME = os.getenv("DB_NAME", "flask_board")
+
+# MariaDB 연결
+conn = pymysql.connect(
+    host=DB_HOST,
+    port=DB_PORT,
+    user=DB_USER,
+    password=DB_PASSWORD,
+    database=DB_NAME,
+    cursorclass=pymysql.cursors.DictCursor
+)
+
+# 테이블 자동 생성
+def create_table():
+    with conn.cursor() as cursor:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS POSTS (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                title VARCHAR(999),
+                content VARCHAR(999)
+            );
+        """)
+        conn.commit()
+
+create_table()
+
+@app.route('/posts', methods=['GET'])
+def get_posts():
+    with conn.cursor() as cursor:
+        cursor.execute("SELECT id, title, content FROM POSTS ORDER BY id DESC")
+        posts = cursor.fetchall()
+    return jsonify(posts)
+
+@app.route('/posts', methods=['POST'])
+def create_post():
+    data = request.json
+    with conn.cursor() as cursor:
+        cursor.execute("INSERT INTO POSTS (title, content) VALUES (%s, %s)", (data['title'], data['content']))
+        conn.commit()
+    return jsonify({'message': '게시글이 추가되었습니다.'}), 201
+
+if __name__ == '__main__':
+    app.run(host='0.0.0.0', port=5000)
+
+
+--------------------------------------------
