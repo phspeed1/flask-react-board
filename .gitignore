@@ -13,3 +13,4 @@ venv/
 # Docker 관련 파일
 *.log
 docker-compose.override.yml
+build/
