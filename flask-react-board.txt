@@ -18,6 +18,36 @@ git init
 
 git remote add origin https://github.com/phspeed1/flask-react-board.git
 
+git add .
+git commit -m "Initial commit: 프로젝트 최초 업로드"
+
+git branch -M main  # 브랜치를 'main'으로 설정
+git push -u origin main
+
+
+1. Personal Access Token (PAT) 사용 (추천)
+GitHub에서는 기존 비밀번호 대신 PAT을 사용하여 인증해야 합니다.
+아래 순서대로 진행하세요.
+
+(1) GitHub에서 Personal Access Token 생성
+GitHub Developer Settings 페이지로 이동
+
+"Generate new token (classic)" 클릭
+
+"Note": 토큰 설명 입력 (예: "Git Access")
+
+"Expiration": 적절한 만료 기간 선택 (무제한 또는 특정 기간)
+
+"Select scopes": repo 권한 체크
+
+"Generate token" 버튼 클릭
+
+생성된 토큰을 복사 (나중에 다시 볼 수 없음)
+
+git remote set-url origin https://phspeed1:ghp_abc123xyz456@github.com/phspeed1/flask-react-board.git
+
+
+
 --------------------------------------------
 D:\prj\flask-react-board.gitignore
 --------------------------------------------
